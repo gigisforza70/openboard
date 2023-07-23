@@ -31,6 +31,13 @@ Changes:
 * Optionally add typed words to system personal dictionary
 * Allow using contacts for suggestions (enable in spell checker settings), https://github.com/openboard-team/openboard/issues/374
 * Re-arranged comma-long-press-menu, https://github.com/Helium314/openboard/pull/7
+* Make Bengali spell check work, https://github.com/Helium314/openboard/pull/11
+* Fix azerty layout in landscape mode on tablets, https://github.com/openboard-team/openboard/pull/791
+* Improve issues with emoji deletion (still happens with delete gesture), https://github.com/Helium314/openboard/issues/22
+* Add Unicode 15 emojis, https://github.com/openboard-team/openboard/issues/25
+* Improved experimental emoji dictionary for download
+* Better currency selection, https://github.com/Helium314/openboard/pull/21 / https://github.com/Helium314/openboard/commit/0d1106649f95ecbd7d8f6d950428547666059564
+* Improved user-defined theming
 
 Plan / to do:
 * ~upgrade dependencies~
@@ -39,7 +46,7 @@ Plan / to do:
 * ~user-selectable dictionaries, https://github.com/openboard-team/openboard/pull/578~
   * ~make additional dictionaries available for download (from OpenBoard PRs)~
   * more dictionaries
-  * proper icon for preference
+  * ~proper icon for preference~ https://github.com/Helium314/openboard/pull/10
 * ~multi-lingual typing, https://github.com/openboard-team/openboard/pull/586, https://github.com/openboard-team/openboard/pull/593~
   * maybe improve way of merging suggestions from both languages
   * test whether it works reasonably well in non-latin scripts
@@ -49,14 +56,16 @@ Plan / to do:
 * ~theming, https://github.com/openboard-team/openboard/issues/124~
   * ~fix emoji view not themed properly~
   * ~fix ABC buttons in emoji and clipboard view have wrong text color~
+  * ~allow adjusting colors without requiring manual reload of keyboard~
+  * ~fix issues in _more suggestions_ view, https://github.com/Helium314/openboard/issues/9#issuecomment-1626932543~ (not 100% fixed, but should not be noticeable)
   * fix buttons on long-press action key not themed
-  * allow adjusting colors without requiring manual reload of keyboard
+  * fix icons on long-press comma key not themed
 * ~delete suggestions, https://github.com/openboard-team/openboard/issues/106~
-  * make functionality more discoverable, e.g. add a button to the _more suggestions_ menu
+  * make functionality more discoverable, e.g. add a button to the _more suggestions_ menu, or replace long-press menu and show more suggestions by scrolling suggestion strip
 * ~gesture typing, https://github.com/openboard-team/openboard/issues/3~
   * ~license issues, require using an external library~
-* re-consider preferring lowercase word for typed history in some cases (DictionaryFacilitatorImpl.addWordToUserHistory)
 * ~move/copy _use contacts_ setting from well hidden spell checker settings to _text correction_ settings~
+* add emojis to user history, to be used for next word suggestions
 
 -----
 

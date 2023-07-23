@@ -21,7 +21,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
@@ -30,7 +29,6 @@ import androidx.core.graphics.BlendModeColorFilterCompat;
 import androidx.core.graphics.BlendModeCompat;
 
 import org.dslul.openboard.inputmethod.compat.AppWorkaroundsUtils;
-import org.dslul.openboard.inputmethod.keyboard.KeyboardTheme;
 import org.dslul.openboard.inputmethod.latin.InputAttributes;
 import org.dslul.openboard.inputmethod.latin.R;
 import org.dslul.openboard.inputmethod.latin.RichInputMethodManager;
@@ -111,7 +109,7 @@ public class SettingsValues {
     public final int mScreenMetrics;
     public final boolean mAddToPersonalDictionary;
     public final boolean mUseContactsDictionary;
-    public final boolean mNavBarColor;
+    public final boolean mCustomNavBarColor;
 
     // From the input box
     @Nonnull
@@ -129,14 +127,17 @@ public class SettingsValues {
     private final AsyncResultHolder<AppWorkaroundsUtils> mAppWorkarounds;
 
     // User-defined colors
-    public final boolean mUserTheme;
-    public final ColorFilter mKeyBackgroundColorFilter;
-    public final int mBackgroundColor;
-    public final ColorFilter mBackgroundColorFilter;
-    public final ColorFilter mKeyTextColorFilter;
-    public final ColorFilter mHintTextColorFilter;
-    public final int mUserThemeColorAccent;
-    public final int mKeyTextColor;
+    public final boolean mCustomTheme;
+    public final ColorFilter mCustomKeyBackgroundColorFilter;
+    public final ColorFilter mCustomFunctionalKeyBackgroundColorFilter;
+    public final ColorFilter mCustomSpaceBarBackgroundColorFilter;
+    public final int mCustomBackgroundColor;
+    public final ColorFilter mCustomBackgroundColorFilter;
+    public final ColorFilter mCustomKeyTextColorFilter;
+    public final ColorFilter mCustomHintTextColorFilter;
+    public final int mCustomThemeColorAccent;
+    public final int mCustomKeyTextColor;
+    public final int mNavBarColor;
 
     // Debug settings
     public final boolean mIsInternal;
@@ -264,39 +265,29 @@ public class SettingsValues {
         mOneHandedModeGravity = Settings.readOneHandedModeGravity(prefs);
         mSecondaryLocale = Settings.getSecondaryLocale(prefs, RichInputMethodManager.getInstance().getCurrentSubtypeLocale().toString());
 
-        final int keyboardThemeId = KeyboardTheme.getThemeForParameters(
-                prefs.getString(Settings.PREF_THEME_FAMILY, ""),
-                prefs.getString(Settings.PREF_THEME_VARIANT, ""),
-                prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, false),
-                prefs.getBoolean(Settings.PREF_THEME_DAY_NIGHT, false),
-                prefs.getBoolean(Settings.PREF_THEME_AMOLED_MODE, false)
-        );
-        mUserTheme = KeyboardTheme.getIsUser(keyboardThemeId);
-        mUserThemeColorAccent = prefs.getInt(Settings.PREF_THEME_USER_COLOR_ACCENT, Color.BLUE);
-        final int keyBgColor;
-        if (prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, false))
-            keyBgColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_KEYS, Color.LTGRAY);
-        else
-            keyBgColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_BACKGROUND, Color.DKGRAY);
-        mKeyBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(keyBgColor, BlendModeCompat.MODULATE);
-        mHintTextColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(prefs.getInt(Settings.PREF_THEME_USER_COLOR_HINT_TEXT, Color.WHITE), BlendModeCompat.SRC_ATOP);
-        mKeyTextColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_TEXT, Color.WHITE);
-        mKeyTextColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(mKeyTextColor, BlendModeCompat.SRC_ATOP);
-        if (mUserTheme) {
-            mBackgroundColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_BACKGROUND, Color.DKGRAY);
-        } else if (KeyboardTheme.THEME_VARIANT_LIGHT.equals(KeyboardTheme.getThemeVariant(keyboardThemeId))) {
-            mBackgroundColor = Color.rgb(236, 239, 241);
-        } else if (keyboardThemeId == KeyboardTheme.THEME_ID_LXX_DARK) {
-            mBackgroundColor = Color.rgb(38, 50, 56);
+        final Colors colors = Settings.getColors(context.getResources().getConfiguration(), prefs);
+        mNavBarColor = colors.navBar;
+        mCustomTheme = colors.isCustom;
+        mCustomThemeColorAccent = colors.accent;
+        mCustomKeyTextColor = colors.keyText;
+        mCustomBackgroundColor = colors.background;
+        mCustomBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(mCustomBackgroundColor, BlendModeCompat.MODULATE);
+        if (prefs.getBoolean(Settings.PREF_THEME_KEY_BORDERS, false)) {
+            mCustomKeyBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(colors.keyBackground, BlendModeCompat.MODULATE);
+            mCustomFunctionalKeyBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(colors.functionalKey, BlendModeCompat.MODULATE);
+            mCustomSpaceBarBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(colors.spaceBar, BlendModeCompat.MODULATE);
         } else {
-            // dark border is 13/13/13, but that's ok
-            mBackgroundColor = Color.BLACK;
+            // need to set color to background if key borders are disabled, or there will be ugly keys
+            mCustomKeyBackgroundColorFilter = mCustomBackgroundColorFilter;
+            mCustomFunctionalKeyBackgroundColorFilter = mCustomBackgroundColorFilter;
+            mCustomSpaceBarBackgroundColorFilter = mCustomBackgroundColorFilter;
         }
-        mBackgroundColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(mBackgroundColor, BlendModeCompat.MODULATE);
+        mCustomHintTextColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(colors.keyHintText, BlendModeCompat.SRC_ATOP);
+        mCustomKeyTextColorFilter = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(mCustomKeyTextColor, BlendModeCompat.SRC_ATOP);
 
         mAddToPersonalDictionary = prefs.getBoolean(Settings.PREF_ADD_TO_PERSONAL_DICTIONARY, false);
         mUseContactsDictionary = prefs.getBoolean(AndroidSpellCheckerService.PREF_USE_CONTACTS_KEY, false);
-        mNavBarColor = prefs.getBoolean(Settings.PREF_NAVBAR_COLOR, false);
+        mCustomNavBarColor = prefs.getBoolean(Settings.PREF_NAVBAR_COLOR, false);
     }
 
     public boolean isMetricsLoggingEnabled() {

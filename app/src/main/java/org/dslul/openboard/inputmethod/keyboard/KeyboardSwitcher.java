@@ -100,6 +100,10 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         }
     }
 
+    public void forceUpdateKeyboardTheme() {
+        mLatinIME.setInputView(onCreateInputView(mIsHardwareAcceleratedDrawingEnabled));
+    }
+
     private boolean updateKeyboardThemeAndContextThemeWrapper(final Context context,
             final KeyboardTheme keyboardTheme) {
         final boolean nightModeChanged = (mCurrentUiMode & Configuration.UI_MODE_NIGHT_MASK)
@@ -552,8 +556,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
         // set background color here, otherwise there is a narrow white line between keyboard and suggestion strip
         final SettingsValues settingsValues = Settings.getInstance().getCurrent();
-        if (settingsValues.mUserTheme)
-            mKeyboardViewWrapper.getBackground().setColorFilter(settingsValues.mBackgroundColorFilter);
+        if (settingsValues.mCustomTheme)
+            mKeyboardViewWrapper.getBackground().setColorFilter(settingsValues.mCustomBackgroundColorFilter);
 
         return mCurrentInputView;
     }
