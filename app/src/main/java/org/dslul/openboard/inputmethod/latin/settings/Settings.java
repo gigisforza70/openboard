@@ -27,10 +27,14 @@ import android.os.Build;
 import android.util.Log;
 
 import android.view.Gravity;
+
+import androidx.core.content.ContextCompat;
+
 import org.dslul.openboard.inputmethod.keyboard.KeyboardTheme;
 import org.dslul.openboard.inputmethod.latin.AudioAndHapticFeedbackManager;
 import org.dslul.openboard.inputmethod.latin.InputAttributes;
 import org.dslul.openboard.inputmethod.latin.R;
+import org.dslul.openboard.inputmethod.latin.common.Colors;
 import org.dslul.openboard.inputmethod.latin.common.LocaleUtils;
 import org.dslul.openboard.inputmethod.latin.common.StringUtils;
 import org.dslul.openboard.inputmethod.latin.utils.AdditionalSubtypeUtils;
@@ -61,6 +65,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_POPUP_ON = "popup_on";
     public static final String PREF_THEME_FAMILY = "theme_family";
     public static final String PREF_THEME_VARIANT = "theme_variant";
+    public static final String PREF_CUSTOM_THEME_VARIANT = "custom_theme_variant";
     public static final String PREF_THEME_KEY_BORDERS = "theme_key_borders";
     public static final String PREF_THEME_DAY_NIGHT = "theme_auto_day_night";
     public static final String PREF_THEME_AMOLED_MODE = "theme_amoled_mode";
@@ -542,7 +547,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
         return null;
     }
 
-    public static Colors getColors(final Configuration configuration, final SharedPreferences prefs) {
+    public static Colors getColors(final Context context, final SharedPreferences prefs) {
         final int keyboardThemeId = KeyboardTheme.getThemeForParameters(
                 prefs.getString(Settings.PREF_THEME_FAMILY, ""),
                 prefs.getString(Settings.PREF_THEME_VARIANT, ""),
@@ -551,71 +556,9 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
                 prefs.getBoolean(Settings.PREF_THEME_AMOLED_MODE, false)
         );
         if (!KeyboardTheme.getIsCustom(keyboardThemeId))
-            return new Colors(keyboardThemeId, configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK);
+            return new Colors(keyboardThemeId, context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
 
-        // we have a custom theme, which is user only (at the moment)
-        final int accent = prefs.getInt(Settings.PREF_THEME_USER_COLOR_ACCENT, Color.BLUE);
-        final int keyBgColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_KEYS, Color.LTGRAY);
-        final int keyTextColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_TEXT, Color.WHITE);
-        final int hintTextColor = prefs.getInt(Settings.PREF_THEME_USER_COLOR_HINT_TEXT, Color.WHITE);
-        final int background = prefs.getInt(Settings.PREF_THEME_USER_COLOR_BACKGROUND, Color.DKGRAY);
-
-        return new Colors(accent, background, keyBgColor, keyBgColor, keyBgColor, keyTextColor, hintTextColor);
+        return KeyboardTheme.getCustomTheme(prefs.getString(Settings.PREF_CUSTOM_THEME_VARIANT, KeyboardTheme.THEME_LIGHT), context, prefs);
     }
 
-}
-
-// class for forwarding custom colors to SettingsValues
-// (kotlin data class could be 3 lines...)
-// actually this could contain the color filters too, which would allow more flexibility (only do if needed)
-class Colors {
-    boolean isCustom;
-    int navBar;
-    int accent;
-    int background;
-    int keyBackground;
-    int functionalKey; // this color will appear darker than set, as it is applied using a color filter in modulate mode
-    int spaceBar;
-    int keyText;
-    int keyHintText;
-    public Colors(int acc, int bg, int k, int fun, int space, int kt, int kht) {
-        isCustom = true;
-        accent = acc;
-        background = bg;
-        keyBackground = k;
-        functionalKey = fun;
-        spaceBar = space;
-        keyText = kt;
-        keyHintText = kht;
-        // slightly adjust color so it matches keyboard background (actually it's a little off)
-        // todo: remove this weird not-really-white? i.e. set actually white background
-        //  then the default themes could simply be replaced by a set of colors...
-        //  but: this needs to work for the auto-theme too!
-        navBar = Color.rgb((int) (Color.red(background) * 0.925), (int) (Color.green(background) * 0.9379), (int) (Color.blue(background) * 0.945));
-    }
-    public Colors(int themeId, int nightModeFlags) {
-        isCustom = false;
-        if (KeyboardTheme.getIsDayNight(themeId)) {
-            if (nightModeFlags == Configuration.UI_MODE_NIGHT_NO)
-                navBar = Color.rgb(236, 239, 241);
-            else if (themeId == KeyboardTheme.THEME_ID_LXX_DARK)
-                navBar = Color.rgb(38, 50, 56);
-            else
-                navBar = Color.BLACK;
-        } else if (KeyboardTheme.THEME_VARIANT_LIGHT.equals(KeyboardTheme.getThemeVariant(themeId))) {
-            navBar = Color.rgb(236, 239, 241);
-        } else if (themeId == KeyboardTheme.THEME_ID_LXX_DARK) {
-            navBar = Color.rgb(38, 50, 56);
-        } else {
-            // dark border is 13/13/13, but that's ok
-            navBar = Color.BLACK;
-        }
-        accent = 0;
-        background = 0;
-        keyBackground = 0;
-        functionalKey = 0;
-        spaceBar = 0;
-        keyText = 0;
-        keyHintText = 0;
-    }
 }
