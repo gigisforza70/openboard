@@ -1,8 +1,14 @@
-OpenBoard is a 100% foss keyboard based on AOSP, with no dependency on Google binaries, that respects your privacy.
+HeliBoard is a privacy-conscious open-source keyboard, based on AOSP / OpenBoard.
+Does not use internet permission, and thus is 100% offline.
 
 Features:
- - Spell correction
- - Themes
- - Emojis
 
-This app is opensource, the code is available here: https://github.com/openboard-team/openboard
+ - Add your own dictionaries for suggestions and spell check
+ - Customizable themes and background
+ - Customizable layouts
+ - Multilingual typing
+ - Glide typing (only with closed source library)
+ - Clipboard history
+ - One-handed mode
+ - Split keyboard
+ - Backup and restore your data

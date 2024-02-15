@@ -1,42 +1,33 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * modified
+ * SPDX-License-Identifier: Apache-2.0 AND GPL-3.0-only
  */
 
 package com.android.inputmethod.latin;
 
 import android.text.TextUtils;
-import android.util.Log;
+import helium314.keyboard.latin.utils.Log;
 import android.util.SparseArray;
 
-import org.dslul.openboard.inputmethod.annotations.UsedForTesting;
-import org.dslul.openboard.inputmethod.latin.Dictionary;
-import org.dslul.openboard.inputmethod.latin.NgramContext;
-import org.dslul.openboard.inputmethod.latin.SuggestedWords.SuggestedWordInfo;
-import org.dslul.openboard.inputmethod.latin.common.ComposedData;
-import org.dslul.openboard.inputmethod.latin.common.Constants;
-import org.dslul.openboard.inputmethod.latin.common.FileUtils;
-import org.dslul.openboard.inputmethod.latin.common.InputPointers;
-import org.dslul.openboard.inputmethod.latin.common.StringUtils;
-import org.dslul.openboard.inputmethod.latin.makedict.DictionaryHeader;
-import org.dslul.openboard.inputmethod.latin.makedict.FormatSpec;
-import org.dslul.openboard.inputmethod.latin.makedict.FormatSpec.DictionaryOptions;
-import org.dslul.openboard.inputmethod.latin.makedict.UnsupportedFormatException;
-import org.dslul.openboard.inputmethod.latin.makedict.WordProperty;
-import org.dslul.openboard.inputmethod.latin.settings.SettingsValuesForSuggestion;
+import androidx.annotation.NonNull;
+
+import helium314.keyboard.latin.Dictionary;
+import helium314.keyboard.latin.NgramContext;
+import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo;
+import helium314.keyboard.latin.common.ComposedData;
+import helium314.keyboard.latin.common.Constants;
+import helium314.keyboard.latin.common.FileUtils;
+import helium314.keyboard.latin.common.InputPointers;
+import helium314.keyboard.latin.common.StringUtils;
+import helium314.keyboard.latin.makedict.DictionaryHeader;
+import helium314.keyboard.latin.makedict.FormatSpec;
+import helium314.keyboard.latin.makedict.FormatSpec.DictionaryOptions;
+import helium314.keyboard.latin.makedict.UnsupportedFormatException;
+import helium314.keyboard.latin.makedict.WordProperty;
+import helium314.keyboard.latin.settings.SettingsValuesForSuggestion;
 import com.android.inputmethod.latin.utils.BinaryDictionaryUtils;
-import org.dslul.openboard.inputmethod.latin.utils.JniUtils;
+import helium314.keyboard.latin.utils.JniUtils;
 import com.android.inputmethod.latin.utils.WordInputEventForPersonalization;
 
 import java.io.File;
@@ -45,8 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 /**
  * Implements a static, compacted, binary dictionary of standard words.
@@ -62,13 +51,9 @@ public final class BinaryDictionary extends Dictionary {
     public static final int DICTIONARY_MAX_WORD_LENGTH = 48;
     public static final int MAX_PREV_WORD_COUNT_FOR_N_GRAM = 3;
 
-    @UsedForTesting
     public static final String UNIGRAM_COUNT_QUERY = "UNIGRAM_COUNT";
-    @UsedForTesting
     public static final String BIGRAM_COUNT_QUERY = "BIGRAM_COUNT";
-    @UsedForTesting
     public static final String MAX_UNIGRAM_COUNT_QUERY = "MAX_UNIGRAM_COUNT";
-    @UsedForTesting
     public static final String MAX_BIGRAM_COUNT_QUERY = "MAX_BIGRAM_COUNT";
 
     public static final int NOT_A_VALID_TIMESTAMP = -1;
@@ -294,8 +279,9 @@ public final class BinaryDictionary extends Dictionary {
         }
         session.mNativeSuggestOptions.setUseFullEditDistance(mUseFullEditDistance);
         session.mNativeSuggestOptions.setIsGesture(isGesture);
-        session.mNativeSuggestOptions.setBlockOffensiveWords(
-                settingsValuesForSuggestion.mBlockPotentiallyOffensive);
+        if (isGesture)
+            session.mNativeSuggestOptions.setIsSpaceAwareGesture(settingsValuesForSuggestion.mSpaceAwareGesture);
+        session.mNativeSuggestOptions.setBlockOffensiveWords(settingsValuesForSuggestion.mBlockPotentiallyOffensive);
         session.mNativeSuggestOptions.setWeightForLocale(weightForLocale);
         if (inOutWeightOfLangModelVsSpatialModel != null) {
             session.mInputOutputWeightOfLangModelVsSpatialModel[0] =
@@ -373,7 +359,6 @@ public final class BinaryDictionary extends Dictionary {
         return getMaxProbabilityOfExactMatchesNative(mNativeDict, codePoints);
     }
 
-    @UsedForTesting
     public boolean isValidNgram(final NgramContext ngramContext, final String word) {
         return getNgramProbability(ngramContext, word) != NOT_A_PROBABILITY;
     }
@@ -497,7 +482,7 @@ public final class BinaryDictionary extends Dictionary {
     }
 
     // Update entries for the word occurrence with the ngramContext.
-    public boolean updateEntriesForWordWithNgramContext(@Nonnull final NgramContext ngramContext,
+    public boolean updateEntriesForWordWithNgramContext(@NonNull final NgramContext ngramContext,
             final String word, final boolean isValidWord, final int count, final int timestamp) {
         if (TextUtils.isEmpty(word)) {
             return false;
@@ -514,7 +499,6 @@ public final class BinaryDictionary extends Dictionary {
         return true;
     }
 
-    @UsedForTesting
     public void updateEntriesForInputEvents(final WordInputEventForPersonalization[] inputEvents) {
         if (!isValidDictionary()) {
             return;
@@ -629,7 +613,6 @@ public final class BinaryDictionary extends Dictionary {
         }
     }
 
-    @UsedForTesting
     public String getPropertyForGettingStats(final String query) {
         if (!isValidDictionary()) {
             return "";
